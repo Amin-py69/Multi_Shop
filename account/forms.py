@@ -43,3 +43,8 @@ class UserChangeForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["phone", "email", "password", "is_active", "is_admin"]
+
+
+class LoginForm(forms.Form):
+    phone = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
