@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate, login, logout
 from .models import RegisterOtp, User
 import ghasedakpack
 from random import randint
+from django.utils.crypto import get_random_string
+from uuid import uuid4
 
 SMS = ghasedakpack.Ghasedak("1205cbf0a351107afb5c4abec80f0705840b4f0fe6b1b4f123b2e5d2ff526f24")
 
@@ -41,10 +43,11 @@ class RegisterView(View):
         if form.is_valid():
             phone = form.cleaned_data.get('phone')
             random_code = randint(1000, 9999)
+            token = str(uuid4())
             SMS.verification({'receptor': phone, 'type': '1', 'template': 'randcode', 'param1': random_code})
-            RegisterOtp.objects.create(phone=phone, code=random_code)
+            RegisterOtp.objects.create(phone=phone, code=random_code, token=token)
             print(random_code)
-            return redirect(reverse('account:otp_code') + f'?phone={phone}')
+            return redirect(reverse('account:otp_code') + f'?token={token}')
         else:
             form.add_error('phone', 'your phone or password is wrong')
 
@@ -57,13 +60,15 @@ class OtpCheckCodeView(View):
         return render(request, 'account/otp_code.html', {'form': form})
 
     def post(self, request):
-        phone = request.GET.get('phone')
+        token = request.GET.get('token')
         form = OtpCheckCodeForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data.get('code')
-            if RegisterOtp.objects.filter(code=code, phone=phone).exists():
-                user = User.objects.create_user(phone=phone)
+            if RegisterOtp.objects.filter(code=code, token=token).exists():
+                otp = RegisterOtp.objects.get(token=token)
+                user, is_created = User.objects.get_or_create(phone=otp.phone)
                 login(request, user)
+                otp.delete()
                 return redirect('home:home_index')
         else:
             form.add_error('phone', 'your phone or password is wrong')

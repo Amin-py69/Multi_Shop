@@ -53,7 +53,7 @@ def start_by_0(value):
 
 class LoginForm(forms.Form):
     phone = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}),
-                            validators=[validators.MaxLengthValidator(12)])
+                            validators=[validators.MaxLengthValidator(50)])
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
 
