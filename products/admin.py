@@ -24,5 +24,11 @@ class ImageAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(models.Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('title', 'slug', 'parent')
+    prepopulated_fields = {'slug': ('title',)}
+
+
 admin.site.register(models.Color)
 admin.site.register(models.Size)
